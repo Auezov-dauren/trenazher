@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Персонализированный тренажер: Действия над рациональными числами (6 класс)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- KaTeX CSS & JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', sans-serif;
+    }
+    .katex {
+      font-size: 1.06em;
+    }
+    .option-btn {
+      transition: all 0.18s ease;
+    }
+    .option-btn:not(:disabled):hover {
+      border-color: #2563eb;
+      background-color: #eff6ff;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-blue-100 selection:text-blue-900">
+
+  <!-- Верхняя панель навигации / статус-бар -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shadow-sm">
+          ℚ
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+              Математика • 6 класс • Подготовка к СОР
+            </span>
+            <span id="modeBadge" class="hidden text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+              Работа над ошибками
+            </span>
+          </div>
+          <h1 class="text-sm sm:text-base font-bold text-slate-900 mt-0.5">
+            Действия над рациональными числами
+          </h1>
+        </div>
+      </div>
+
+      <!-- Индикатор прогресса и таймера (активен во время теста) -->
+      <div id="liveStatsBar" class="hidden flex items-center gap-4 sm:gap-6">
+        <div class="text-right">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Прогресс</div>
+          <div class="text-sm font-bold text-slate-800">
+            <span id="answeredCount" class="text-indigo-600">0</span> / <span id="totalCount">18</span>
+          </div>
+        </div>
+        <div class="h-8 w-px bg-slate-200"></div>
+        <div class="text-right">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Время</div>
+          <div id="timerDisplay" class="text-sm font-mono font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg">
+            00:00
+          </div>
+        </div>
+      </div>
+
+      <!-- Кнопка верификатора для учителя -->
+      <button
+        id="openVerifierBtn"
+        type="button"
+        class="text-xs font-semibold text-slate-600 hover:text-indigo-700 bg-slate-100 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+        title="Проверить подлинность отчета ученика"
+      >
+        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+        <span class="hidden sm:inline">Проверка отчета (Учителю)</span>
+        <span class="sm:hidden">Учителю</span>
+      </button>
+    </div>
+    <!-- Тонкая полоса прогресса -->
+    <div id="progressBarContainer" class="hidden w-full bg-slate-100 h-1.5">
+      <div id="progressBarFill" class="bg-indigo-600 h-1.5 transition-all duration-300" style="width: 0%"></div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+
+    <!-- ЭКРАН 1: АВТОРИЗАЦИЯ И СТАРТ -->
+    <section id="startScreen" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-10">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold mb-4 border border-indigo-100">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          Data-Driven персонализация обучения • 6 класс
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Персонализированный тренажер: Действия над рациональными числами
+        </h2>
+        <p class="mt-3 text-slate-600 text-sm sm:text-base leading-relaxed">
+          <strong class="text-slate-800">Цель обучения (СОР):</strong> отработка правил умножения и деления рациональных чисел (десятичных, обыкновенных и смешанных дробей с разными и одинаковыми отрицательными знаками), перевода бесконечных периодических десятичных дробей в обыкновенные и решения текстовых задач составлением уравнения.
+        </p>
+
+        <!-- Сетка структуры СОР (5 блоков, 18 заданий) -->
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div class="text-xs font-bold text-indigo-600 uppercase">Блок 1 • 4 задания</div>
+            <div class="text-sm font-semibold text-slate-800 mt-0.5">Умножение рациональных чисел</div>
+            <div class="text-xs text-slate-500 mt-1">Десятичные и обыкновенные дроби (разные и отрицательные знаки)</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div class="text-xs font-bold text-indigo-600 uppercase">Блок 2 • 4 задания</div>
+            <div class="text-sm font-semibold text-slate-800 mt-0.5">Деление рациональных чисел</div>
+            <div class="text-xs text-slate-500 mt-1">Десятичные и смешанные дроби с разными и одинаковыми знаками</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div class="text-xs font-bold text-indigo-600 uppercase">Блок 3 • 3 задания</div>
+            <div class="text-sm font-semibold text-slate-800 mt-0.5">Чистая периодическая дробь</div>
+            <div class="text-xs text-slate-500 mt-1">Перевод в обыкновенную: 1, 2 и 3 цифры в периоде</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div class="text-xs font-bold text-indigo-600 uppercase">Блок 4 • 4 задания</div>
+            <div class="text-sm font-semibold text-slate-800 mt-0.5">Смешанная периодическая дробь</div>
+            <div class="text-xs text-slate-500 mt-1">Структуры (1+1), (1+2), (2+1) и (2+2)</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 sm:col-span-2 lg:col-span-2">
+            <div class="text-xs font-bold text-indigo-600 uppercase">Блок 5 • 3 задания</div>
+            <div class="text-sm font-semibold text-slate-800 mt-0.5">Текстовые задачи на рациональные числа</div>
+            <div class="text-xs text-slate-500 mt-1">Составление линейных уравнений с отрицательными числами и дробями</div>
+          </div>
+        </div>
+
+        <!-- Форма ввода ФИО -->
+        <div class="mt-8 pt-6 border-t border-slate-200">
+          <label for="studentNameInput" class="block text-sm font-semibold text-slate-800 mb-2">
+            Фамилия и Имя ученика <span class="text-red-600">*</span>
+          </label>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              id="studentNameInput"
+              placeholder="Например: Серикова Амина"
+              class="flex-1 rounded-xl border border-slate-300 px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 text-base"
+              autocomplete="name"
+            />
+            <button
+              id="startBtn"
+              type="button"
+              class="rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold px-7 py-3.5 shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Начать тестирование</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+            </button>
+          </div>
+          <p id="nameErrorMsg" class="hidden mt-2 text-sm text-red-600 font-medium">
+            Пожалуйста, введите Фамилию и Имя перед началом тестирования.
+          </p>
+          <p class="mt-3 text-xs text-slate-500 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            Включена антисписок-механика: варианты заданий и порядок ответов формируются индивидуально для каждого запуска.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ЭКРАН 2: ДИАГНОСТИЧЕСКИЙ ОТЧЕТ (появляется сверху после завершения) -->
+    <section id="reportSection" class="hidden mb-8 space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200 mb-2">
+              Диагностический отчет сформирован
+            </div>
+            <h2 id="reportTitle" class="text-2xl font-extrabold text-slate-900">
+              Результаты тестирования
+            </h2>
+            <p class="text-sm text-slate-600 mt-1">
+              Ученик: <strong id="repStudentName" class="text-slate-900"></strong> • Дата: <span id="repDate"></span> • Время: <strong id="repDuration" class="text-slate-900"></strong>
+            </p>
+          </div>
+
+          <!-- Итоговый бейдж балла -->
+          <div class="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+            <div class="text-center">
+              <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Баллы</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-indigo-600">
+                <span id="repScore">0</span><span class="text-lg text-slate-400 font-semibold">/<span id="repTotal">18</span></span>
+              </div>
+            </div>
+            <div class="h-10 w-px bg-slate-200"></div>
+            <div class="text-center">
+              <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Процент</div>
+              <div id="repPercent" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0%</div>
+            </div>
+            <div class="h-10 w-px bg-slate-200"></div>
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Уровень СОР</div>
+              <div id="repLevelBadge" class="mt-0.5 inline-block px-3 py-1 rounded-lg text-xs font-bold">
+                —
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Анализ по 5 дескрипторам (типичные ошибки) -->
+        <div id="descriptorAnalysisWrapper" class="mt-6">
+          <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            Диагностика по дескрипторам (анализ типичных ошибок)
+          </h3>
+          <div id="descriptorsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Заполняется динамически -->
+          </div>
+          <div id="typicalErrorsSummary" class="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-900 hidden">
+            <!-- Текстовое резюме западающих тем -->
+          </div>
+        </div>
+
+        <!-- Панель действий: Работа над ошибками и Сохранение отчета -->
+        <div class="mt-6 pt-6 border-t border-slate-200 flex flex-wrap items-center gap-3">
+          <button
+            id="remediationBtn"
+            type="button"
+            class="hidden rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-semibold px-5 py-3 shadow-sm transition flex items-center gap-2 cursor-pointer"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span id="remediationBtnText">Работа над ошибками</span>
+          </button>
+
+          <button
+            id="saveReportBtn"
+            type="button"
+            class="rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold px-6 py-3 shadow-sm transition flex items-center gap-2 cursor-pointer"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+            <span>Сохранить отчет</span>
+          </button>
+
+          <button
+            id="copySummaryBtn"
+            type="button"
+            class="rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold px-4 py-3 transition flex items-center gap-2 cursor-pointer"
+          >
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+            <span>Скопировать сводку</span>
+          </button>
+        </div>
+
+        <!-- Плашка контрольного кода подлинности -->
+        <div class="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2 text-slate-600">
+            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <span>Контрольный код подлинности отчета:</span>
+          </div>
+          <code id="repVerificationCode" class="font-mono font-bold text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-slate-300 select-all">
+            RAT-0000-0000-0000
+          </code>
+        </div>
+
+        <!-- Подробный разбор ошибок -->
+        <div id="mistakesReviewContainer" class="mt-8 pt-6 border-t border-slate-200 hidden">
+          <h3 class="text-lg font-bold text-red-700 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            Разбор допущенных ошибок и пошаговые решения
+          </h3>
+          <div id="mistakesList" class="space-y-4">
+            <!-- Карточки ошибок с решениями -->
+          </div>
+        </div>
+
+        <!-- Сообщение при 100% результате -->
+        <div id="perfectScoreBanner" class="hidden mt-6 p-5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900">
+          <div class="font-bold text-base">Превосходный результат! Все задания выполнены безошибочно.</div>
+          <p class="text-sm mt-1 text-emerald-800">Вы полностью готовы к суммативному оцениванию за раздел «Действия над рациональными числами». Нажмите «Сохранить отчет», чтобы показать результат учителю.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ЭКРАН 3: КОНТЕЙНЕР ЗАДАНИЙ -->
+    <section id="quizSection" class="hidden space-y-8">
+      <!-- Информационная плашка текущего режима -->
+      <div id="activeStudentBanner" class="bg-white rounded-xl border border-slate-200 px-5 py-3.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+        <div class="text-sm text-slate-600">
+          Выполняет: <strong id="bannerStudentName" class="text-slate-900"></strong>
+        </div>
+        <div class="text-xs text-slate-500">
+          Выберите один верный ответ в каждом задании
+        </div>
+      </div>
+
+      <!-- Сюда динамически рендерятся блоки и карточки заданий -->
+      <div id="questionsContainer" class="space-y-8"></div>
+
+      <!-- Нижняя панель с кнопкой «Завершить» -->
+      <div id="finishPanel" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="text-sm text-slate-600 text-center sm:text-left">
+          Проверьте выбранные ответы. После нажатия кнопки <strong>«Завершить»</strong> внесение изменений станет недоступным.
+        </div>
+        <button
+          id="finishBtn"
+          type="button"
+          class="w-full sm:w-auto rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold px-8 py-3.5 shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          <span id="finishBtnText">Завершить</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Модальное окно подтверждения завершения -->
+  <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200">
+      <h3 class="text-lg font-bold text-slate-900">Завершить тестирование?</h3>
+      <p id="confirmModalText" class="mt-2 text-sm text-slate-600 leading-relaxed"></p>
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button id="cancelFinishBtn" type="button" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
+          Вернуться к заданиям
+        </button>
+        <button id="confirmFinishBtn" type="button" class="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white cursor-pointer">
+          Да, завершить
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно проверки подлинности отчета для учителя -->
+  <div id="verifierModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Верификатор отчетов (Анти-подделка)</h3>
+            <p class="text-xs text-slate-500">Проверка контрольного кода из отчета ученика (6 класс)</p>
+          </div>
+        </div>
+        <button id="closeVerifierBtn" type="button" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-3 text-sm">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">ФИО ученика (точно как в отчете)</label>
+          <input type="text" id="verNameInput" placeholder="Серикова Амина" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        </div>
+        <div class="grid grid-cols-3 gap-2.5">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Баллы</label>
+            <input type="number" id="verScoreInput" placeholder="16" min="0" max="18" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Всего заданий</label>
+            <input type="number" id="verTotalInput" value="18" min="1" max="18" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Время (ММ:СС)</label>
+            <input type="text" id="verDurationInput" placeholder="09:45" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Дата и время завершения (как в отчете)</label>
+          <input type="text" id="verDateInput" placeholder="20.11.2026 15:10" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Контрольный код из отчета</label>
+          <input type="text" id="verCodeInput" placeholder="RAT-XXXX-XXXX-XXXX" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 font-mono uppercase text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        </div>
+
+        <div id="verResultBox" class="hidden p-3.5 rounded-xl text-xs font-semibold leading-relaxed"></div>
+      </div>
+
+      <div class="mt-5 flex items-center justify-end gap-2.5">
+        <button id="runVerifyBtn" type="button" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 transition cursor-pointer">
+          Проверить подлинность данных
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Всплывающее уведомление (Toast) -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5">
+      <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      <span id="toastText">Уведомление</span>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * БАНК ЗАДАНИЙ ПО МАТЕМАТИКЕ (6 КЛАСС)
+     * Тема: Действия над рациональными числами (18 позиций в 5 блоках)
+     */
+    const QUESTION_BANK = [
+      // =========================================================================
+      // БЛОК 1: УМНОЖЕНИЕ РАЦИОНАЛЬНЫХ ЧИСЕЛ (4 примера)
+      // Десятичные и обыкновенные дроби, разные и одинаковые (отрицательные) знаки,
+      // без пары «положительное × положительное»
+      // =========================================================================
+      {
+        slotId: 1,
+        blockId: 1,
+        blockTitle: 'Блок 1. Умножение рациональных чисел',
+        descriptor: 'Умножение десятичных дробей с разными знаками',
+        variants: [
+          {
+            question: 'Вычислите произведение десятичных дробей с разными знаками: $-2{,}4 \\cdot 0{,}5$',
+            options: ['$-1{,}2$', '$1{,}2$', '$-12$', '$-0{,}12$'],
+            correct: 0,
+            solution: 'Произведение двух чисел с разными знаками отрицательно. Умножаем модули: $2{,}4 \\cdot 0{,}5 = 1{,}2$. Ставим знак «минус»: $-1{,}2$.'
+          },
+          {
+            question: 'Вычислите произведение десятичных дробей с разными знаками: $3{,}6 \\cdot (-0{,}25)$',
+            options: ['$-0{,}9$', '$0{,}9$', '$-9$', '$-0{,}09$'],
+            correct: 0,
+            solution: 'Знаки множителей разные, поэтому результат отрицательный. Заметим, что $0{,}25 = \\frac{1}{4}$, тогда $3{,}6 \\cdot \\frac{1}{4} = 0{,}9$. Ответ: $-0{,}9$.'
+          }
+        ]
+      },
+      {
+        slotId: 2,
+        blockId: 1,
+        blockTitle: 'Блок 1. Умножение рациональных чисел',
+        descriptor: 'Умножение двух отрицательных десятичных дробей',
+        variants: [
+          {
+            question: 'Вычислите произведение двух отрицательных десятичных дробей: $-1{,}5 \\cdot (-0{,}6)$',
+            options: ['$0{,}9$', '$-0{,}9$', '$9$', '$-9$'],
+            correct: 0,
+            solution: 'Произведение двух отрицательных чисел положительно («минус на минус дает плюс»). Перемножаем модули: $1{,}5 \\cdot 0{,}6 = 0{,}90 = 0{,}9$.'
+          },
+          {
+            question: 'Вычислите произведение двух отрицательных десятичных дробей: $-0{,}8 \\cdot (-1{,}25)$',
+            options: ['$1$', '$-1$', '$10$', '$-0{,}1$'],
+            correct: 0,
+            solution: 'Оба множителя отрицательные, значит произведение положительно. Умножаем модули: $0{,}8 \\cdot 1{,}25 = 1{,}000 = 1$.'
+          }
+        ]
+      },
+      {
+        slotId: 3,
+        blockId: 1,
+        blockTitle: 'Блок 1. Умножение рациональных чисел',
+        descriptor: 'Умножение обыкновенных дробей с разными знаками',
+        variants: [
+          {
+            question: 'Вычислите произведение обыкновенных дробей с разными знаками: $-\\frac{4}{9} \\cdot \\frac{3}{8}$',
+            options: ['$-\\frac{1}{6}$', '$\\frac{1}{6}$', '$-\\frac{7}{17}$', '$-\\frac{1}{12}$'],
+            correct: 0,
+            solution: 'Множители имеют разные знаки — ставим знак «минус». Сокращаем числители и знаменатели: $-\\frac{4 \\cdot 3}{9 \\cdot 8} = -\\frac{1 \\cdot 1}{3 \\cdot 2} = -\\frac{1}{6}$.'
+          },
+          {
+            question: 'Вычислите произведение обыкновенных дробей с разными знаками: $\\frac{5}{12} \\cdot \\left(-\\frac{4}{15}\\right)$',
+            options: ['$-\\frac{1}{9}$', '$\\frac{1}{9}$', '$-\\frac{1}{3}$', '$-\\frac{20}{27}$'],
+            correct: 0,
+            solution: 'Результат отрицательный. Сокращаем $5$ и $15$ на $5$, а $4$ и $12$ на $4$: $-\\frac{1 \\cdot 1}{3 \\cdot 3} = -\\frac{1}{9}$.'
+          }
+        ]
+      },
+      {
+        slotId: 4,
+        blockId: 1,
+        blockTitle: 'Блок 1. Умножение рациональных чисел',
+        descriptor: 'Умножение двух отрицательных обыкновенных дробей',
+        variants: [
+          {
+            question: 'Вычислите произведение двух отрицательных обыкновенных дробей: $-\\frac{5}{7} \\cdot \\left(-\\frac{14}{15}\\right)$',
+            options: ['$\\frac{2}{3}$', '$-\\frac{2}{3}$', '$\\frac{3}{2}$', '$-\\frac{19}{22}$'],
+            correct: 0,
+            solution: 'Произведение двух отрицательных дробей положительно. Сокращаем $5$ и $15$ на $5$, $14$ и $7$ на $7$: $\\frac{1 \\cdot 2}{1 \\cdot 3} = \\frac{2}{3}$.'
+          },
+          {
+            question: 'Вычислите произведение двух отрицательных обыкновенных дробей: $-\\frac{3}{10} \\cdot \\left(-\\frac{5}{6}\\right)$',
+            options: ['$\\frac{1}{4}$', '$-\\frac{1}{4}$', '$\\frac{1}{2}$', '$-\\frac{8}{16}$'],
+            correct: 0,
+            solution: 'Знак произведения «плюс». Сокращаем $3$ и $6$ на $3$, $5$ и $10$ на $5$: $\\frac{1 \\cdot 1}{2 \\cdot 2} = \\frac{1}{4}$.'
+          }
+        ]
+      },
+
+      // =========================================================================
+      // БЛОК 2: ДЕЛЕНИЕ РАЦИОНАЛЬНЫХ ЧИСЕЛ (4 примера)
+      // Разные и одинаковые знаки, десятичные и смешанные дроби
+      // =========================================================================
+      {
+        slotId: 5,
+        blockId: 2,
+        blockTitle: 'Блок 2. Деление рациональных чисел',
+        descriptor: 'Деление десятичных дробей с разными знаками',
+        variants: [
+          {
+            question: 'Выполните деление десятичных дробей с разными знаками: $-4{,}8 : 0{,}6$',
+            options: ['$-8$', '$8$', '$-0{,}8$', '$0{,}8$'],
+            correct: 0,
+            solution: 'Частное чисел с разными знаками отрицательно. Переносим запятую на 1 знак вправо: $-48 : 6 = -8$.'
+          },
+          {
+            question: 'Выполните деление десятичных дробей с разными знаками: $6{,}3 : (-0{,}09)$',
+            options: ['$-70$', '$70$', '$-7$', '$-0{,}7$'],
+            correct: 0,
+            solution: 'Частное отрицательно. Переносим запятую на 2 знака вправо в делимом и делителе: $-630 : 9 = -70$.'
+          }
+        ]
+      },
+      {
+        slotId: 6,
+        blockId: 2,
+        blockTitle: 'Блок 2. Деление рациональных чисел',
+        descriptor: 'Деление двух отрицательных десятичных дробей',
+        variants: [
+          {
+            question: 'Выполните деление двух отрицательных десятичных дробей: $-0{,}72 : (-0{,}8)$',
+            options: ['$0{,}9$', '$-0{,}9$', '$9$', '$-9$'],
+            correct: 0,
+            solution: 'Частное двух отрицательных чисел положительно. Переносим запятую на 1 знак вправо: $7{,}2 : 8 = 0{,}9$.'
+          },
+          {
+            question: 'Выполните деление двух отрицательных десятичных дробей: $-3{,}6 : (-0{,}12)$',
+            options: ['$30$', '$-30$', '$3$', '$-3$'],
+            correct: 0,
+            solution: 'Оба числа отрицательные, результат положительный. Переносим запятую на 2 знака вправо: $360 : 12 = 30$.'
+          }
+        ]
+      },
+      {
+        slotId: 7,
+        blockId: 2,
+        blockTitle: 'Блок 2. Деление рациональных чисел',
+        descriptor: 'Деление смешанных дробей с разными знаками',
+        variants: [
+          {
+            question: 'Выполните деление смешанных дробей с разными знаками: $-2\\frac{1}{4} : 1\\frac{1}{2}$',
+            options: ['$-1\\frac{1}{2}$', '$1\\frac{1}{2}$', '$-3\\frac{3}{8}$', '$-\\frac{2}{3}$'],
+            correct: 0,
+            solution: 'Переводим смешанные числа в неправильные дроби: $-2\\frac{1}{4} = -\\frac{9}{4}$, $1\\frac{1}{2} = \\frac{3}{2}$. Умножаем на дробь, обратную делителю: $-\\frac{9}{4} \\cdot \\frac{2}{3} = -\\frac{3}{2} = -1\\frac{1}{2}$.'
+          },
+          {
+            question: 'Выполните деление смешанных дробей с разными знаками: $3\\frac{1}{3} : \\left(-1\\frac{2}{3}\\right)$',
+            options: ['$-2$', '$2$', '$-\\frac{1}{2}$', '$-5\\frac{5}{9}$'],
+            correct: 0,
+            solution: 'Переводим в неправильные дроби: $3\\frac{1}{3} = \\frac{10}{3}$, $-1\\frac{2}{3} = -\\frac{5}{3}$. Делим: $\\frac{10}{3} \\cdot \\left(-\\frac{3}{5}\\right) = -2$.'
+          }
+        ]
+      },
+      {
+        slotId: 8,
+        blockId: 2,
+        blockTitle: 'Блок 2. Деление рациональных чисел',
+        descriptor: 'Деление двух отрицательных смешанных дробей',
+        variants: [
+          {
+            question: 'Выполните деление двух отрицательных смешанных дробей: $-3\\frac{1}{3} : \\left(-1\\frac{1}{9}\\right)$',
+            options: ['$3$', '$-3$', '$\\frac{1}{3}$', '$3\\frac{10}{27}$'],
+            correct: 0,
+            solution: 'Частное двух отрицательных чисел положительно. Переводим в неправильные дроби: $3\\frac{1}{3} = \\frac{10}{3}$, $1\\frac{1}{9} = \\frac{10}{9}$. Вычисляем: $\\frac{10}{3} : \\frac{10}{9} = \\frac{10}{3} \\cdot \\frac{9}{10} = 3$.'
+          },
+          {
+            question: 'Выполните деление двух отрицательных смешанных дробей: $-2\\frac{2}{5} : \\left(-1\\frac{1}{5}\\right)$',
+            options: ['$2$', '$-2$', '$\\frac{1}{2}$', '$2\\frac{2}{25}$'],
+            correct: 0,
+            solution: 'Результат положительный. Переводим в неправильные дроби: $\\frac{12}{5} : \\frac{6}{5} = \\frac{12}{5} \\cdot \\frac{5}{6} = 2$.'
+          }
+        ]
+      },
+
+      // =========================================================================
+      // БЛОК 3: ПЕРЕВОД ЧИСТОЙ БЕСКОНЕЧНОЙ ПЕРИОДИЧЕСКОЙ ДРОБИ В ОБЫКНОВЕННУЮ (3 примера)
+      // 1 цифра в периоде, 2 цифры в периоде, 3 цифры в периоде
+      // =========================================================================
+      {
+        slotId: 9,
+        blockId: 3,
+        blockTitle: 'Блок 3. Чистая периодическая дробь → обыкновенная',
+        descriptor: 'Перевод чистой периодической дроби с 1 цифрой в периоде',
+        variants: [
+          {
+            question: 'Представьте чистую периодическую десятичную дробь $0,(7)$ в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{7}{9}$', '$\\frac{7}{10}$', '$\\frac{7}{99}$', '$\\frac{1}{7}$'],
+            correct: 0,
+            solution: 'В периоде стоит $1$ цифра ($7$). По правилу перевода чистой периодической дроби в числитель записываем период $7$, а в знаменатель — одну девятку: $0,(7) = \\frac{7}{9}$.'
+          },
+          {
+            question: 'Представьте чистую периодическую десятичную дробь $0,(6)$ в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{2}{3}$', '$\\frac{6}{10}$', '$\\frac{6}{99}$', '$\\frac{3}{5}$'],
+            correct: 0,
+            solution: 'В периоде $1$ цифра: $0,(6) = \\frac{6}{9}$. Сокращаем дробь на $3$: $\\frac{6}{9} = \\frac{2}{3}$.'
+          }
+        ]
+      },
+      {
+        slotId: 10,
+        blockId: 3,
+        blockTitle: 'Блок 3. Чистая периодическая дробь → обыкновенная',
+        descriptor: 'Перевод чистой периодической дроби с 2 цифрами в периоде',
+        variants: [
+          {
+            question: 'Представьте чистую периодическую десятичную дробь $0,(27)$ в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{3}{11}$', '$\\frac{27}{100}$', '$\\frac{27}{90}$', '$\\frac{9}{33}$'],
+            correct: 0,
+            solution: 'В периоде стоят $2$ цифры ($27$), поэтому в знаменателе пишем две девятки ($99$): $0,(27) = \\frac{27}{99}$. Сокращаем числитель и знаменатель на $9$: $\\frac{27 : 9}{99 : 9} = \\frac{3}{11}$.'
+          },
+          {
+            question: 'Представьте чистую периодическую десятичную дробь $0,(36)$ в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{4}{11}$', '$\\frac{36}{100}$', '$\\frac{36}{90}$', '$\\frac{6}{11}$'],
+            correct: 0,
+            solution: 'В периоде $2$ цифры: $0,(36) = \\frac{36}{99}$. Сокращаем дробь на $9$: $\\frac{36 : 9}{99 : 9} = \\frac{4}{11}$.'
+          }
+        ]
+      },
+      {
+        slotId: 11,
+        blockId: 3,
+        blockTitle: 'Блок 3. Чистая периодическая дробь → обыкновенная',
+        descriptor: 'Перевод чистой периодической дроби с 3 цифрами в периоде',
+        variants: [
+          {
+            question: 'Представьте чистую периодическую десятичную дробь $0,(123)$ в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{41}{333}$', '$\\frac{123}{1000}$', '$\\frac{123}{990}$', '$\\frac{41}{330}$'],
+            correct: 0,
+            solution: 'В периоде стоят $3$ цифры ($123$), значит в знаменатель записываем три девятки ($999$): $0,(123) = \\frac{123}{999}$. Сокращаем дробь на $3$: $\\frac{123 : 3}{999 : 3} = \\frac{41}{333}$.'
+          },
+          {
+            question: 'Представьте чистую периодическую десятичную дробь $0,(027)$ в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{1}{37}$', '$\\frac{27}{1000}$', '$\\frac{3}{110}$', '$\\frac{27}{99}$'],
+            correct: 0,
+            solution: 'В периоде $3$ цифры ($027$), следовательно $0,(027) = \\frac{27}{999}$. Сокращаем на $27$ (так как $999 = 27 \\cdot 37$): $\\frac{27}{999} = \\frac{1}{37}$.'
+          }
+        ]
+      },
+
+      // =========================================================================
+      // БЛОК 4: ПЕРЕВОД СМЕШАННОЙ ПЕРИОДИЧЕСКОЙ ДРОБИ В ОБЫКНОВЕННУЮ (4 примера)
+      // Структуры: (1+1), (1+2), (2+1), (2+2) — количество цифр в предпериоде и периоде
+      // =========================================================================
+      {
+        slotId: 12,
+        blockId: 4,
+        blockTitle: 'Блок 4. Смешанная периодическая дробь → обыкновенная',
+        descriptor: 'Перевод смешанной периодической дроби вида 0,a(b) [структура 1+1]',
+        variants: [
+          {
+            question: 'Представьте смешанную периодическую дробь $0,1(6)$ (1 цифра до периода и 1 в периоде) в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{1}{6}$', '$\\frac{16}{90}$', '$\\frac{15}{99}$', '$\\frac{1}{5}$'],
+            correct: 0,
+            solution: 'По правилу перевода смешанной периодической дроби: из числа $16$ вычитаем предпериод $1$ ($16 - 1 = 15$), а в знаменатель ставим одну девятку и один ноль ($90$). Получаем $\\frac{15}{90} = \\frac{1}{6}$.'
+          },
+          {
+            question: 'Представьте смешанную периодическую дробь $0,2(3)$ (1 цифра до периода и 1 в периоде) в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{7}{30}$', '$\\frac{23}{90}$', '$\\frac{21}{99}$', '$\\frac{23}{100}$'],
+            correct: 0,
+            solution: 'Числитель: $23 - 2 = 21$. Знаменатель: $90$ (одна цифра в периоде и одна в предпериоде). Сокращаем $\\frac{21}{90}$ на $3$: получаем $\\frac{7}{30}$.'
+          }
+        ]
+      },
+      {
+        slotId: 13,
+        blockId: 4,
+        blockTitle: 'Блок 4. Смешанная периодическая дробь → обыкновенная',
+        descriptor: 'Перевод смешанной периодической дроби вида 0,a(bc) [структура 1+2]',
+        variants: [
+          {
+            question: 'Представьте смешанную периодическую дробь $0,2(45)$ (1 цифра до периода и 2 в периоде) в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{27}{110}$', '$\\frac{243}{900}$', '$\\frac{245}{990}$', '$\\frac{27}{100}$'],
+            correct: 0,
+            solution: 'В предпериоде $1$ цифра ($2$), в периоде $2$ цифры ($45$). Числитель: $245 - 2 = 243$. Знаменатель: $990$ (две девятки и один ноль). Сокращаем $\\frac{243}{990}$ на $9$: $\\frac{243 : 9}{990 : 9} = \\frac{27}{110}$.'
+          },
+          {
+            question: 'Представьте смешанную периодическую дробь $0,1(36)$ (1 цифра до периода и 2 в периоде) в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{3}{22}$', '$\\frac{136}{990}$', '$\\frac{135}{900}$', '$\\frac{15}{110}$'],
+            correct: 0,
+            solution: 'Числитель: $136 - 1 = 135$. Знаменатель: $990$. Сокращаем $\\frac{135}{990}$ на $45$: $135 : 45 = 3$, $990 : 45 = 22$. Ответ: $\\frac{3}{22}$.'
+          }
+        ]
+      },
+      {
+        slotId: 14,
+        blockId: 4,
+        blockTitle: 'Блок 4. Смешанная периодическая дробь → обыкновенная',
+        descriptor: 'Перевод смешанной периодической дроби вида 0,ab(c) [структура 2+1]',
+        variants: [
+          {
+            question: 'Представьте смешанную периодическую дробь $0,12(3)$ (2 цифры до периода и 1 в периоде) в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{37}{300}$', '$\\frac{111}{990}$', '$\\frac{123}{900}$', '$\\frac{41}{300}$'],
+            correct: 0,
+            solution: 'В предпериоде $2$ цифры ($12$), в периоде $1$ цифра ($3$). Числитель: $123 - 12 = 111$. Знаменатель: $900$ (одна девятка и два нуля). Сокращаем $\\frac{111}{900}$ на $3$: $\\frac{37}{300}$.'
+          },
+          {
+            question: 'Представьте смешанную периодическую дробь $0,24(6)$ (2 цифры до периода и 1 в периоде) в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{37}{150}$', '$\\frac{222}{990}$', '$\\frac{246}{900}$', '$\\frac{111}{500}$'],
+            correct: 0,
+            solution: 'Числитель: $246 - 24 = 222$. Знаменатель: $900$. Сокращаем $\\frac{222}{900}$ на $6$: $222 : 6 = 37$, $900 : 6 = 150$. Ответ: $\\frac{37}{150}$.'
+          }
+        ]
+      },
+      {
+        slotId: 15,
+        blockId: 4,
+        blockTitle: 'Блок 4. Смешанная периодическая дробь → обыкновенная',
+        descriptor: 'Перевод смешанной периодической дроби вида 0,ab(cd) [структура 2+2]',
+        variants: [
+          {
+            question: 'Представьте смешанную периодическую дробь $0,12(45)$ (2 цифры до периода и 2 в периоде) в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{411}{3300}$', '$\\frac{1233}{9990}$', '$\\frac{1245}{9900}$', '$\\frac{137}{1100}$'],
+            correct: 0,
+            solution: 'В предпериоде $2$ цифры ($12$), в периоде $2$ цифры ($45$). Числитель: $1245 - 12 = 1233$. Знаменатель: $9900$ (две девятки и два нуля). Сокращаем $\\frac{1233}{9900}$ на $3$: $\\frac{411}{3300}$ (число $411$ не делится на $3$, так как сумма цифр $4+1+1=6$? Внимание: $411 : 3 = 137$! Проверим: $1233 : 9 = 137$, $9900 : 9 = 1100$!).'
+          },
+          {
+            question: 'Представьте смешанную периодическую дробь $0,15(27)$ (2 цифры до периода и 2 в периоде) в виде несократимой обыкновенной дроби:',
+            options: ['$\\frac{168}{1100}$', '$\\frac{42}{275}$', '$\\frac{1512}{9990}$', '$\\frac{1527}{9900}$'],
+            correct: 1,
+            solution: 'Числитель: $1527 - 15 = 1512$. Знаменатель: $9900$ (две девятки и два нуля). Сокращаем $\\frac{1512}{9900}$ на $36$: $1512 : 36 = 42$, $9900 : 36 = 275$. Несократимая дробь: $\\frac{42}{275}$.'
+          }
+        ]
+      },
+
+      // =========================================================================
+      // БЛОК 5: ТЕКСТОВЫЕ ЗАДАЧИ НА ПРИМЕНЕНИЕ РАЦИОНАЛЬНЫХ ЧИСЕЛ (СОСТАВЛЕНИЕ УРАВНЕНИЯ) (3 задачи)
+      // =========================================================================
+      {
+        slotId: 16,
+        blockId: 5,
+        blockTitle: 'Блок 5. Текстовые задачи (составление уравнения)',
+        descriptor: 'Решение текстовой задачи на задуманное число с отрицательными рациональными числами',
+        variants: [
+          {
+            question: 'Алихан задумал рациональное число. Он умножил его на $-2{,}5$, а затем к полученному произведению прибавил $4{,}8$ и получил $-7{,}7$. Какое число задумал Алихан?',
+            options: ['$5$', '$-5$', '$1{,}16$', '$-1{,}16$'],
+            correct: 0,
+            solution: 'Пусть $x$ — задуманное число. Составим уравнение: $-2{,}5x + 4{,}8 = -7{,}7$. Переносим $4{,}8$ в правую часть: $-2{,}5x = -7{,}7 - 4{,}8 \\Rightarrow -2{,}5x = -12{,}5$. Делим обе части на $-2{,}5$: $x = -12{,}5 : (-2{,}5) = 5$.'
+          },
+          {
+            question: 'Дамир задумал рациональное число. Он разделил его на $-0{,}4$, затем вычел из результата $6{,}5$ и получил $-14$. Какое число задумал Дамир?',
+            options: ['$3$', '$-3$', '$8{,}2$', '$-8{,}2$'],
+            correct: 0,
+            solution: 'Пусть $x$ — задуманное число. Уравнение: $x : (-0{,}4) - 6{,}5 = -14$. Тогда $x : (-0{,}4) = -14 + 6{,}5 \\Rightarrow x : (-0{,}4) = -7{,}5$. Находим делимое: $x = -7{,}5 \\cdot (-0{,}4) = 3$.'
+          }
+        ]
+      },
+      {
+        slotId: 17,
+        blockId: 5,
+        blockTitle: 'Блок 5. Текстовые задачи (составление уравнения)',
+        descriptor: 'Решение задачи на изменение температуры / уровня с составлением уравнения',
+        variants: [
+          {
+            question: 'Утром температура воздуха в Павлодаре составляла $x$ °C. Днем она понизилась в $1{,}5$ раза (стала равной $\\frac{x}{1{,}5}$), а к вечеру опустилась еще на $3{,}4$ °C и составила $-8{,}2$ °C. Найдите утреннюю температуру воздуха $x$.',
+            options: ['$-7{,}2$ °C', '$7{,}2$ °C', '$-17{,}4$ °C', '$-3{,}2$ °C'],
+            correct: 0,
+            solution: 'По условию составим уравнение: $\\frac{x}{1{,}5} - 3{,}4 = -8{,}2$. Переносим $-3{,}4$: $\\frac{x}{1{,}5} = -8{,}2 + 3{,}4 = -4{,}8$. Умножаем на $1{,}5$: $x = -4{,}8 \\cdot 1{,}5 = -7{,}2$ °C.'
+          },
+          {
+            question: 'Уровень воды в реке Иртыш за первую неделю изменился на $x$ см, за вторую неделю изменение составило $-0{,}6x$ см, а за третью неделю уровень понизился на $12{,}4$ см. В итоге общее изменение уровня за 3 недели составило $-18$ см. Найдите $x$.',
+            options: ['$-14$ см', '$14$ см', '$-3{,}5$ см', '$3{,}5$ см'],
+            correct: 0,
+            solution: 'Составим уравнение суммарного изменения: $x + (-0{,}6x) - 12{,}4 = -18$. Приводим подобные слагаемые: $0{,}4x = -18 + 12{,}4 \\Rightarrow 0{,}4x = -5{,}6$. Делим на $0{,}4$: $x = -5{,}6 : 0{,}4 = -14$ см.'
+          }
+        ]
+      },
+      {
+        slotId: 18,
+        blockId: 5,
+        blockTitle: 'Блок 5. Текстовые задачи (составление уравнения)',
+        descriptor: 'Решение текстовой задачи на дроби и рациональные числа уравнением',
+        variants: [
+          {
+            question: 'Разность двух чисел равна $-4{,}5$. Найдите большее число, если меньшее число составляет $\\frac{2}{5}$ от большего.',
+            options: ['$-7{,}5$', '$7{,}5$', '$-3$', '$3$'],
+            correct: 0,
+            solution: 'Пусть $x$ — большее число, тогда меньшее равно $\\frac{2}{5}x = 0{,}4x$. Так как разность большего и меньшего равна $x - 0{,}4x = 0{,}6x$, а по условию разность равна $-4{,}5$, получаем уравнение: $0{,}6x = -4{,}5 \\Rightarrow x = -4{,}5 : 0{,}6 = -7{,}5$. (Проверка: меньшее число $0{,}4 \\cdot (-7{,}5) = -3$, и $-3 - (-7{,}5) = 4{,}5$, то есть разность между $-7{,}5$ и $-3$ равна $-4{,}5$).'
+          },
+          {
+            question: 'Одно число в $2{,}5$ раза меньше другого. Если из большего числа вычесть $12{,}6$, а к меньшему прибавить $2{,}4$, то получатся равные результаты. Найдите меньшее число.',
+            options: ['$10$', '$25$', '$-10$', '$6$'],
+            correct: 0,
+            solution: 'Пусть $x$ — меньшее число, тогда большее равно $2{,}5x$. Составим уравнение: $2{,}5x - 12{,}6 = x + 2{,}4$. Переносим слагаемые: $2{,}5x - x = 2{,}4 + 12{,}6 \\Rightarrow 1{,}5x = 15 \\Rightarrow x = 15 : 1{,}5 = 10$.'
+          }
+        ]
+      }
+    ];
+
+    // Корректировка варианта 1 в slotId 15 для абсолютной точности несократимой дроби:
+    // 0,12(45) = (1245 - 12)/9900 = 1233/9900 = 137/1100
+    QUESTION_BANK[14].variants[0] = {
+      question: 'Представьте смешанную периодическую дробь $0,12(45)$ (2 цифры до периода и 2 в периоде) в виде несократимой обыкновенной дроби:',
+      options: ['$\\frac{137}{1100}$', '$\\frac{1233}{9990}$', '$\\frac{1245}{9900}$', '$\\frac{411}{3300}$'],
+      correct: 0,
+      solution: 'В предпериоде $2$ цифры ($12$), в периоде $2$ цифры ($45$). Числитель: $1245 - 12 = 1233$. Знаменатель: $9900$ (две девятки и два нуля). Сокращаем дробь $\\frac{1233}{9900}$ на $9$: $1233 : 9 = 137$, $9900 : 9 = 1100$. Несократимая дробь: $\\frac{137}{1100}$.'
+    };
+
+    // =========================================================================
+    // СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+    // =========================================================================
+    const REPORT_SALT = 'KZ-MATH6-RAT-MASTER-2026';
+
+    const state = {
+      studentName: '',
+      mode: 'main', // 'main' | 'remediation'
+      isFinished: false,
+      startTime: null,
+      startDateStr: '',
+      endTime: null,
+      timerInterval: null,
+      activeQuestions: [],
+      userAnswers: {},
+      mainReport: null,
+      remediationReport: null
+    };
+
+    // Генерация детерминированного криптографического контрольного кода (RAT-XXXX-XXXX-XXXX)
+    function computeVerificationCode({ studentName, score, total, durationStr, dateStr }) {
+      const normalizedName = String(studentName || '').trim().toLowerCase().replace(/\s+/g, ' ');
+      const payload = `${REPORT_SALT}|${normalizedName}|${Number(score)}|${Number(total)}|${String(durationStr).trim()}|${String(dateStr).trim()}`;
+
+      let h1 = 0x811c9dc5;
+      let h2 = 0x1b873593;
+      let h3 = 0x5bd1e995;
+
+      for (let i = 0; i < payload.length; i++) {
+        const ch = payload.charCodeAt(i);
+        h1 ^= ch;
+        h1 = Math.imul(h1, 0x01000193);
+
+        h2 = Math.imul(h2 ^ ch, 0x85ebca6b);
+        h2 ^= h2 >>> 13;
+
+        h3 = ((h3 << 5) + h3) ^ ch;
+      }
+
+      const part1 = ((h1 >>> 0) & 0xffff).toString(16).toUpperCase().padStart(4, '0');
+      const part2 = ((h2 >>> 0) & 0xffff).toString(16).toUpperCase().padStart(4, '0');
+      const part3 = ((h3 >>> 0) & 0xffff).toString(16).toUpperCase().padStart(4, '0');
+
+      return `RAT-${part1}-${part2}-${part3}`;
+    }
+
+    function renderMath(element = document.body) {
+      if (window.renderMathInElement) {
+        renderMathInElement(element, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function formatDuration(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastText').textContent = text;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    function generateQuestions(filterSlotIds = null, previousVariantIndices = {}) {
+      const slotsToUse = filterSlotIds
+        ? QUESTION_BANK.filter(item => filterSlotIds.includes(item.slotId))
+        : QUESTION_BANK;
+
+      return slotsToUse.map((slot, idx) => {
+        let variantIndex = Math.floor(Math.random() * slot.variants.length);
+        if (
+          filterSlotIds &&
+          slot.variants.length > 1 &&
+          previousVariantIndices[slot.slotId] !== undefined &&
+          variantIndex === previousVariantIndices[slot.slotId]
+        ) {
+          variantIndex = (variantIndex + 1) % slot.variants.length;
+        }
+
+        const chosenVariant = slot.variants[variantIndex];
+        const indexedOptions = chosenVariant.options.map((optText, i) => ({
+          text: optText,
+          isCorrect: i === chosenVariant.correct
+        }));
+        const shuffledOptions = shuffleArray(indexedOptions);
+        const newCorrectIndex = shuffledOptions.findIndex(o => o.isCorrect);
+
+        return {
+          displayNumber: idx + 1,
+          slotId: slot.slotId,
+          blockId: slot.blockId,
+          blockTitle: slot.blockTitle,
+          descriptor: slot.descriptor,
+          variantIndex: variantIndex,
+          question: chosenVariant.question,
+          options: shuffledOptions.map(o => o.text),
+          correct: newCorrectIndex,
+          solution: chosenVariant.solution
+        };
+      });
+    }
+
+    function startTimer() {
+      stopTimer();
+      const now = new Date();
+      state.startTime = now.getTime();
+      state.startDateStr =
+        now.toLocaleDateString('ru-RU') +
+        ' ' +
+        now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('timerDisplay').textContent = '00:00';
+      state.timerInterval = setInterval(() => {
+        const elapsed = Date.now() - state.startTime;
+        document.getElementById('timerDisplay').textContent = formatDuration(elapsed);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+      state.endTime = Date.now();
+    }
+
+    function updateProgressUI() {
+      const total = state.activeQuestions.length;
+      const answered = Object.keys(state.userAnswers).length;
+      document.getElementById('answeredCount').textContent = answered;
+      document.getElementById('totalCount').textContent = total;
+      const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
+      document.getElementById('progressBarFill').style.width = `${pct}%`;
+    }
+
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+
+      const blocksMap = new Map();
+      state.activeQuestions.forEach(q => {
+        if (!blocksMap.has(q.blockId)) {
+          blocksMap.set(q.blockId, {
+            blockId: q.blockId,
+            blockTitle: q.blockTitle,
+            items: []
+          });
+        }
+        blocksMap.get(q.blockId).items.push(q);
+      });
+
+      blocksMap.forEach(block => {
+        const blockWrapper = document.createElement('div');
+        blockWrapper.className = 'space-y-4';
+
+        const blockHeader = document.createElement('div');
+        blockHeader.className = 'flex items-center justify-between border-b border-slate-200 pb-2';
+        blockHeader.innerHTML = `
+          <h3 class="text-base sm:text-lg font-bold text-slate-900">${block.blockTitle}</h3>
+          <span class="text-xs font-semibold text-slate-500 bg-slate-200/70 px-2.5 py-1 rounded-full">
+            Заданий: ${block.items.length}
+          </span>
+        `;
+        blockWrapper.appendChild(blockHeader);
+
+        block.items.forEach(q => {
+          const card = document.createElement('div');
+          card.id = `q-card-${q.slotId}`;
+          card.className = 'bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 transition-all';
+
+          const letters = ['A', 'B', 'C', 'D'];
+          const optionsHtml = q.options
+            .map((optText, optIdx) => {
+              return `
+                <button
+                  type="button"
+                  data-slot="${q.slotId}"
+                  data-opt="${optIdx}"
+                  class="option-btn w-full text-left rounded-xl border border-slate-200 bg-white px-4 py-3.5 flex items-center gap-3.5 cursor-pointer group"
+                >
+                  <span class="opt-letter w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center shrink-0 group-hover:bg-indigo-100 group-hover:text-indigo-700 transition">
+                    ${letters[optIdx]}
+                  </span>
+                  <span class="text-sm sm:text-base text-slate-800 font-medium leading-snug">
+                    ${optText}
+                  </span>
+                </button>
+              `;
+            })
+            .join('');
+
+          card.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-xs border border-indigo-100">
+                  Задание №${q.displayNumber}
+                </span>
+                <span class="text-xs text-slate-500 font-medium">${q.descriptor}</span>
+              </div>
+              <span id="q-status-${q.slotId}" class="hidden text-xs font-bold px-2.5 py-1 rounded-full"></span>
+            </div>
+            <div class="text-base sm:text-lg font-semibold text-slate-900 mb-4 leading-relaxed">
+              ${q.question}
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="options-grid-${q.slotId}">
+              ${optionsHtml}
+            </div>
+            <div id="inline-solution-${q.slotId}" class="hidden mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-700 leading-relaxed">
+              <div class="font-bold text-slate-900 mb-1">Пошаговое решение:</div>
+              <div>${q.solution}</div>
+            </div>
+          `;
+
+          blockWrapper.appendChild(card);
+        });
+
+        container.appendChild(blockWrapper);
+      });
+
+      document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (state.isFinished) return;
+          const slotId = Number(btn.dataset.slot);
+          const optIdx = Number(btn.dataset.opt);
+          selectOption(slotId, optIdx);
+        });
+      });
+
+      renderMath(container);
+    }
+
+    function selectOption(slotId, optIdx) {
+      if (state.isFinished) return;
+      state.userAnswers[slotId] = optIdx;
+
+      const grid = document.getElementById(`options-grid-${slotId}`);
+      if (!grid) return;
+
+      grid.querySelectorAll('.option-btn').forEach(btn => {
+        const idx = Number(btn.dataset.opt);
+        const letterSpan = btn.querySelector('.opt-letter');
+        if (idx === optIdx) {
+          btn.classList.remove('border-slate-200', 'bg-white');
+          btn.classList.add('border-indigo-600', 'bg-indigo-50/70', 'ring-2', 'ring-indigo-600/20');
+          letterSpan.classList.remove('bg-slate-100', 'text-slate-600');
+          letterSpan.classList.add('bg-indigo-600', 'text-white');
+        } else {
+          btn.classList.remove('border-indigo-600', 'bg-indigo-50/70', 'ring-2', 'ring-indigo-600/20');
+          btn.classList.add('border-slate-200', 'bg-white');
+          letterSpan.classList.remove('bg-indigo-600', 'text-white');
+          letterSpan.classList.add('bg-slate-100', 'text-slate-600');
+        }
+      });
+
+      updateProgressUI();
+    }
+
+    function startSession(mode = 'main', wrongSlotIds = null, prevVariants = {}) {
+      state.mode = mode;
+      state.isFinished = false;
+      state.userAnswers = {};
+      state.activeQuestions = generateQuestions(wrongSlotIds, prevVariants);
+
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('reportSection').classList.add('hidden');
+      document.getElementById('quizSection').classList.remove('hidden');
+      document.getElementById('finishPanel').classList.remove('hidden');
+      document.getElementById('liveStatsBar').classList.remove('hidden');
+      document.getElementById('progressBarContainer').classList.remove('hidden');
+
+      const modeBadge = document.getElementById('modeBadge');
+      if (mode === 'remediation') {
+        modeBadge.classList.remove('hidden');
+        document.getElementById('finishBtnText').textContent = 'Завершить работу над ошибками';
+      } else {
+        modeBadge.classList.add('hidden');
+        document.getElementById('finishBtnText').textContent = 'Завершить';
+      }
+
+      document.getElementById('bannerStudentName').textContent = state.studentName;
+
+      renderQuestions();
+      updateProgressUI();
+      startTimer();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function handleFinishClick() {
+      if (state.isFinished) return;
+      const total = state.activeQuestions.length;
+      const answered = Object.keys(state.userAnswers).length;
+
+      if (answered < total) {
+        const remaining = total - answered;
+        document.getElementById('confirmModalText').textContent =
+          `Вы ответили на ${answered} из ${total} заданий (осталось ${remaining}). Неотвеченные задания будут засчитаны как неверные. Вы уверены, что хотите завершить?`;
+        document.getElementById('confirmModal').classList.remove('hidden');
+      } else {
+        finalizeTest();
+      }
+    }
+
+    function finalizeTest() {
+      document.getElementById('confirmModal').classList.add('hidden');
+      state.isFinished = true;
+      stopTimer();
+
+      const durationStr = formatDuration(state.endTime - state.startTime);
+      const now = new Date();
+      const dateStr =
+        now.toLocaleDateString('ru-RU') +
+        ' ' +
+        now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+      document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.disabled = true;
+        btn.classList.remove('cursor-pointer');
+        btn.classList.add('cursor-default');
+      });
+
+      let score = 0;
+      const detailedResults = [];
+      const wrongQuestions = [];
+
+      state.activeQuestions.forEach(q => {
+        const userOpt = state.userAnswers[q.slotId];
+        const isCorrect = userOpt !== undefined && userOpt === q.correct;
+        if (isCorrect) score++;
+
+        const card = document.getElementById(`q-card-${q.slotId}`);
+        const statusBadge = document.getElementById(`q-status-${q.slotId}`);
+        const grid = document.getElementById(`options-grid-${q.slotId}`);
+
+        statusBadge.classList.remove('hidden');
+        if (isCorrect) {
+          card.classList.add('border-emerald-300', 'bg-emerald-50/10');
+          statusBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800';
+          statusBadge.textContent = '✓ Верно';
+        } else {
+          card.classList.add('border-red-300', 'bg-red-50/10');
+          statusBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-800';
+          statusBadge.textContent = userOpt === undefined ? '✕ Нет ответа' : '✕ Ошибка';
+          document.getElementById(`inline-solution-${q.slotId}`).classList.remove('hidden');
+          wrongQuestions.push(q);
+        }
+
+        grid.querySelectorAll('.option-btn').forEach(btn => {
+          const idx = Number(btn.dataset.opt);
+          const letterSpan = btn.querySelector('.opt-letter');
+          btn.classList.remove('border-indigo-600', 'bg-indigo-50/70', 'ring-2', 'ring-indigo-600/20');
+
+          if (idx === q.correct) {
+            btn.classList.remove('border-slate-200', 'bg-white');
+            btn.classList.add('border-emerald-500', 'bg-emerald-50');
+            letterSpan.classList.remove('bg-slate-100', 'text-slate-600', 'bg-indigo-600');
+            letterSpan.classList.add('bg-emerald-600', 'text-white');
+          } else if (idx === userOpt && !isCorrect) {
+            btn.classList.remove('border-slate-200', 'bg-white');
+            btn.classList.add('border-red-500', 'bg-red-50');
+            letterSpan.classList.remove('bg-slate-100', 'text-slate-600', 'bg-indigo-600');
+            letterSpan.classList.add('bg-red-600', 'text-white');
+          } else {
+            btn.classList.add('opacity-65');
+          }
+        });
+
+        detailedResults.push({
+          ...q,
+          userOpt,
+          userAnswerText: userOpt !== undefined ? q.options[userOpt] : 'Не дан ответ',
+          correctAnswerText: q.options[q.correct],
+          isCorrect
+        });
+      });
+
+      const total = state.activeQuestions.length;
+      const percent = Math.round((score / total) * 100);
+
+      const blockStats = [];
+      const blockIds = [...new Set(state.activeQuestions.map(q => q.blockId))];
+      blockIds.forEach(bId => {
+        const items = detailedResults.filter(r => r.blockId === bId);
+        const blockCorrect = items.filter(r => r.isCorrect).length;
+        const blockTotal = items.length;
+        const blockPct = Math.round((blockCorrect / blockTotal) * 100);
+        blockStats.push({
+          blockId: bId,
+          blockTitle: items[0].blockTitle,
+          correct: blockCorrect,
+          total: blockTotal,
+          percent: blockPct
+        });
+      });
+
+      const verificationCode = computeVerificationCode({
+        studentName: state.studentName,
+        score,
+        total,
+        durationStr,
+        dateStr
+      });
+
+      const reportSnapshot = {
+        mode: state.mode,
+        studentName: state.studentName,
+        startDateStr: state.startDateStr,
+        dateStr,
+        durationStr,
+        score,
+        total,
+        percent,
+        verificationCode,
+        blockStats,
+        detailedResults,
+        wrongQuestions
+      };
+
+      if (state.mode === 'main') {
+        state.mainReport = reportSnapshot;
+      } else {
+        state.remediationReport = reportSnapshot;
+      }
+
+      document.getElementById('finishPanel').classList.add('hidden');
+      renderReportUI(reportSnapshot);
+    }
+
+    function renderReportUI(report) {
+      const reportSection = document.getElementById('reportSection');
+      reportSection.classList.remove('hidden');
+
+      document.getElementById('reportTitle').textContent =
+        report.mode === 'remediation'
+          ? 'Результаты работы над ошибками'
+          : 'Диагностический отчет по подготовке к СОР';
+
+      document.getElementById('repStudentName').textContent = report.studentName;
+      document.getElementById('repDate').textContent = report.dateStr;
+      document.getElementById('repDuration').textContent = report.durationStr;
+      document.getElementById('repScore').textContent = report.score;
+      document.getElementById('repTotal').textContent = report.total;
+      document.getElementById('repPercent').textContent = `${report.percent}%`;
+      document.getElementById('repVerificationCode').textContent = report.verificationCode;
+
+      const badge = document.getElementById('repLevelBadge');
+      if (report.percent >= 85) {
+        badge.textContent = 'Высокий (85–100%)';
+        badge.className = 'mt-0.5 inline-block px-3 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800';
+      } else if (report.percent >= 65) {
+        badge.textContent = 'Достаточный (65–84%)';
+        badge.className = 'mt-0.5 inline-block px-3 py-1 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-800';
+      } else if (report.percent >= 40) {
+        badge.textContent = 'Средний (40–64%)';
+        badge.className = 'mt-0.5 inline-block px-3 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-800';
+      } else {
+        badge.textContent = 'Требуется коррекция (<40%)';
+        badge.className = 'mt-0.5 inline-block px-3 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-800';
+      }
+
+      const descGrid = document.getElementById('descriptorsGrid');
+      descGrid.innerHTML = '';
+      const weakBlocks = [];
+
+      report.blockStats.forEach(bs => {
+        const isOk = bs.correct === bs.total;
+        if (!isOk) weakBlocks.push(bs.blockTitle);
+
+        const card = document.createElement('div');
+        card.className = `p-3.5 rounded-xl border ${
+          isOk ? 'bg-emerald-50/60 border-emerald-200' : 'bg-red-50/60 border-red-200'
+        }`;
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold ${isOk ? 'text-emerald-800' : 'text-red-800'}">
+              ${bs.blockTitle}
+            </span>
+            <span class="text-xs font-extrabold px-2 py-0.5 rounded-md ${
+              isOk ? 'bg-emerald-200/70 text-emerald-900' : 'bg-red-200/70 text-red-900'
+            }">
+              ${bs.correct}/${bs.total} (${bs.percent}%)
+            </span>
+          </div>
+          <div class="mt-1.5 text-xs ${isOk ? 'text-emerald-700' : 'text-red-700'}">
+            ${isOk ? 'Дескриптор освоен полностью' : 'Выявлены пробелы — требуется отработка'}
+          </div>
+        `;
+        descGrid.appendChild(card);
+      });
+
+      const summaryBox = document.getElementById('typicalErrorsSummary');
+      if (weakBlocks.length > 0) {
+        summaryBox.classList.remove('hidden');
+        summaryBox.innerHTML = `<strong>Западающие темы (типичные ошибки):</strong> ${weakBlocks.join('; ')}. Рекомендуется выполнить персональную «Работу над ошибками».`;
+      } else {
+        summaryBox.classList.add('hidden');
+      }
+
+      const remBtn = document.getElementById('remediationBtn');
+      if (report.wrongQuestions.length > 0) {
+        remBtn.classList.remove('hidden');
+        document.getElementById('remediationBtnText').textContent =
+          `Работа над ошибками (${report.wrongQuestions.length} ${getTaskWord(report.wrongQuestions.length)})`;
+      } else {
+        remBtn.classList.add('hidden');
+      }
+
+      const mistakesContainer = document.getElementById('mistakesReviewContainer');
+      const mistakesList = document.getElementById('mistakesList');
+      const perfectBanner = document.getElementById('perfectScoreBanner');
+
+      if (report.wrongQuestions.length > 0) {
+        mistakesContainer.classList.remove('hidden');
+        perfectBanner.classList.add('hidden');
+        mistakesList.innerHTML = '';
+
+        report.detailedResults
+          .filter(r => !r.isCorrect)
+          .forEach(item => {
+            const mCard = document.createElement('div');
+            mCard.className = 'p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5';
+            mCard.innerHTML = `
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-red-700 bg-red-100 px-2.5 py-0.5 rounded-md">
+                  Задание №${item.displayNumber} • ${item.descriptor}
+                </span>
+              </div>
+              <div class="text-sm sm:text-base font-semibold text-slate-900">
+                ${item.question}
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                <div class="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-900">
+                  <span class="font-semibold">Ваш ответ:</span> ${item.userAnswerText}
+                </div>
+                <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900">
+                  <span class="font-semibold">Правильный ответ:</span> ${item.correctAnswerText}
+                </div>
+              </div>
+              <div class="p-3 rounded-lg bg-white border border-slate-200 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                <strong class="text-slate-900">Решение:</strong> ${item.solution}
+              </div>
+            `;
+            mistakesList.appendChild(mCard);
+          });
+      } else {
+        mistakesContainer.classList.add('hidden');
+        perfectBanner.classList.remove('hidden');
+      }
+
+      renderMath(reportSection);
+      reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function getTaskWord(n) {
+      const mod10 = n % 10;
+      const mod100 = n % 100;
+      if (mod10 === 1 && mod100 !== 11) return 'задание';
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'задания';
+      return 'заданий';
+    }
+
+    // =========================================================================
+    // ЭКСПОРТ АВТОНОМНОГО ЗАЩИЩЕННОГО HTML-ОТЧЕТА ДЛЯ УЧИТЕЛЯ («СОХРАНИТЬ ОТЧЕТ»)
+    // =========================================================================
+    function downloadTeacherReport() {
+      const mainRep = state.mainReport || state.remediationReport;
+      if (!mainRep) return;
+
+      const remRep = state.remediationReport;
+      const safeName = mainRep.studentName.replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]/g, '_');
+      const fileName = `Otchet_SOR_6klass_Racionalnye_${safeName}.html`;
+
+      const weakBlocks = mainRep.blockStats
+        .filter(b => b.correct < b.total)
+        .map(b => `${b.blockTitle} (${b.correct}/${b.total})`);
+
+      const levelText =
+        mainRep.percent >= 85
+          ? 'Высокий (85–100%)'
+          : mainRep.percent >= 65
+          ? 'Достаточный (65–84%)'
+          : mainRep.percent >= 40
+          ? 'Средний (40–64%)'
+          : 'Требуется коррекция (<40%)';
+
+      const blockRowsHtml = mainRep.blockStats
+        .map(
+          b => `
+          <tr>
+            <td style="padding:10px;border:1px solid #cbd5e1;">${b.blockTitle}</td>
+            <td style="padding:10px;border:1px solid #cbd5e1;text-align:center;font-weight:bold;">${b.correct} / ${b.total}</td>
+            <td style="padding:10px;border:1px solid #cbd5e1;text-align:center;color:${b.correct === b.total ? '#047857' : '#b91c1c'};font-weight:bold;">
+              ${b.percent}% (${b.correct === b.total ? 'Освоено' : 'Выявлены пробелы'})
+            </td>
+          </tr>`
+        )
+        .join('');
+
+      const questionRowsHtml = mainRep.detailedResults
+        .map(
+          r => `
+          <tr>
+            <td style="padding:8px;border:1px solid #cbd5e1;text-align:center;">${r.displayNumber}</td>
+            <td style="padding:8px;border:1px solid #cbd5e1;">${r.descriptor}</td>
+            <td style="padding:8px;border:1px solid #cbd5e1;">${r.question}</td>
+            <td style="padding:8px;border:1px solid #cbd5e1;">${r.userAnswerText}</td>
+            <td style="padding:8px;border:1px solid #cbd5e1;">${r.correctAnswerText}</td>
+            <td style="padding:8px;border:1px solid #cbd5e1;text-align:center;font-weight:bold;color:${r.isCorrect ? '#047857' : '#b91c1c'};">
+              ${r.isCorrect ? 'Верно (1)' : 'Ошибка (0)'}
+            </td>
+          </tr>`
+        )
+        .join('');
+
+      const remediationSectionHtml = remRep
+        ? `
+          <div style="margin-top:20px;padding:16px;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;">
+            <h3 style="margin:0 0 8px 0;color:#92400e;font-size:15px;">Протокол «Работы над ошибками»</h3>
+            <p style="margin:0;font-size:13px;line-height:1.6;">
+              <strong>Завершено:</strong> ${remRep.dateStr} &nbsp;|&nbsp;
+              <strong>Длительность:</strong> ${remRep.durationStr} &nbsp;|&nbsp;
+              <strong>Результат коррекции:</strong> ${remRep.score} из ${remRep.total} (${remRep.percent}%)<br>
+              <strong>Контрольный код коррекции:</strong> <code style="background:#fff;padding:2px 6px;border:1px solid #fcd34d;border-radius:4px;">${remRep.verificationCode}</code>
+            </p>
+          </div>
+        `
+        : `
+          <div style="margin-top:20px;padding:12px 16px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;font-size:13px;color:#475569;">
+            Режим «Работа над ошибками» не выполнялся.
+          </div>
+        `;
+
+      const reportHtml = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Защищенный протокол СОР (6 класс) — ${mainRep.studentName}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"><\/script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$',right:'$',display:false}]});"><\/script>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; max-width: 980px; margin: 24px auto; padding: 0 16px; line-height: 1.5; background: #ffffff; }
+    .header-box { border-bottom: 2px solid #3730a3; padding-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+    h1 { font-size: 20px; margin: 0 0 4px 0; color: #3730a3; }
+    .seal { background: #eef2ff; border: 1.5px solid #4f46e5; border-radius: 10px; padding: 10px 14px; text-align: right; }
+    .seal-code { font-family: monospace; font-size: 15px; font-weight: bold; color: #3730a3; letter-spacing: 0.5px; }
+    .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 16px; margin: 18px 0; font-size: 13px; }
+    .verify-banner { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 18px; }
+    .verify-ok { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
+    .verify-fail { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th { background: #eef2ff; color: #3730a3; padding: 10px; border: 1px solid #cbd5e1; text-align: left; }
+  </style>
+</head>
+<body>
+  <div class="header-box">
+    <div>
+      <h1>Диагностический протокол подготовки к СОР (Математика, 6 класс)</h1>
+      <div style="color:#475569;font-size:13px;">Раздел: «Действия над рациональными числами» • Персонализированный тренажер</div>
+    </div>
+    <div class="seal">
+      <div style="font-size:10px;text-transform:uppercase;color:#475569;font-weight:bold;">Контрольный код подлинности</div>
+      <div class="seal-code" id="storedCode">${mainRep.verificationCode}</div>
+    </div>
+  </div>
+
+  <div id="integrityStatus" class="verify-banner verify-ok">
+    Проверка целостности данных...
+  </div>
+
+  <div class="meta-grid">
+    <div><strong>Ученик (ФИО):</strong><br><span id="fieldName" style="font-size:15px;font-weight:bold;">${mainRep.studentName}</span></div>
+    <div><strong>Итоговый балл:</strong><br><span style="font-size:15px;font-weight:bold;color:#4338ca;"><span id="fieldScore">${mainRep.score}</span> из <span id="fieldTotal">${mainRep.total}</span> (${mainRep.percent}%)</span></div>
+    <div><strong>Уровень достижения ЦО:</strong><br><span style="font-weight:bold;">${levelText}</span></div>
+    <div><strong>Начало тестирования:</strong><br>${mainRep.startDateStr || mainRep.dateStr}</div>
+    <div><strong>Завершение тестирования:</strong><br><span id="fieldDate">${mainRep.dateStr}</span></div>
+    <div><strong>Затраченное время:</strong><br><span id="fieldDuration" style="font-family:monospace;font-weight:bold;">${mainRep.durationStr}</span></div>
+  </div>
+
+  <div style="padding:12px 16px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;font-size:13px;">
+    <strong>Типичные ошибки (западающие дескрипторы):</strong> ${
+      weakBlocks.length > 0 ? weakBlocks.join('; ') : 'Ошибок не выявлено, все дескрипторы освоены.'
+    }
+  </div>
+
+  ${remediationSectionHtml}
+
+  <h2 style="font-size:16px;margin-top:24px;color:#0f172a;">1. Диагностическая матрица по дескрипторам (5 блоков)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Тематический блок (дескриптор)</th>
+        <th style="text-align:center;">Выполнено</th>
+        <th style="text-align:center;">Результат освоения</th>
+      </tr>
+    </thead>
+    <tbody>${blockRowsHtml}</tbody>
+  </table>
+
+  <h2 style="font-size:16px;margin-top:24px;color:#0f172a;">2. Полный протокол ответов по заданиям</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:center;">№</th>
+        <th>Дескриптор</th>
+        <th>Условие задачи</th>
+        <th>Ответ ученика</th>
+        <th>Правильный ответ</th>
+        <th style="text-align:center;">Статус</th>
+      </tr>
+    </thead>
+    <tbody>${questionRowsHtml}</tbody>
+  </table>
+
+  <script>
+    (function verifyIntegrity() {
+      const salt = '${REPORT_SALT}';
+      const name = document.getElementById('fieldName').textContent.trim().toLowerCase().replace(/\\s+/g, ' ');
+      const score = Number(document.getElementById('fieldScore').textContent.trim());
+      const total = Number(document.getElementById('fieldTotal').textContent.trim());
+      const duration = document.getElementById('fieldDuration').textContent.trim();
+      const dateStr = document.getElementById('fieldDate').textContent.trim();
+      const storedCode = document.getElementById('storedCode').textContent.trim();
+
+      const payload = salt + '|' + name + '|' + score + '|' + total + '|' + duration + '|' + dateStr;
+      let h1 = 0x811c9dc5, h2 = 0x1b873593, h3 = 0x5bd1e995;
+      for (let i = 0; i < payload.length; i++) {
+        const ch = payload.charCodeAt(i);
+        h1 ^= ch; h1 = Math.imul(h1, 0x01000193);
+        h2 = Math.imul(h2 ^ ch, 0x85ebca6b); h2 ^= h2 >>> 13;
+        h3 = ((h3 << 5) + h3) ^ ch;
+      }
+      const expected = 'RAT-' +
+        ((h1 >>> 0) & 0xffff).toString(16).toUpperCase().padStart(4, '0') + '-' +
+        ((h2 >>> 0) & 0xffff).toString(16).toUpperCase().padStart(4, '0') + '-' +
+        ((h3 >>> 0) & 0xffff).toString(16).toUpperCase().padStart(4, '0');
+
+      const banner = document.getElementById('integrityStatus');
+      if (expected === storedCode) {
+        banner.className = 'verify-banner verify-ok';
+        banner.textContent = '✓ ПОДЛИННОСТЬ ПОДТВЕРЖДЕНА: Цифровая подпись (' + storedCode + ') полностью совпадает с данными протокола.';
+      } else {
+        banner.className = 'verify-banner verify-fail';
+        banner.textContent = '✕ ВНИМАНИЕ! ОБНАРУЖЕНО ИЗМЕНЕНИЕ ФАЙЛА: Контрольный код не соответствует указанным баллам, ФИО или времени.';
+      }
+    })();
+  <\/script>
+</body>
+</html>`;
+
+      const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast(`Защищенный отчет «${fileName}» сохранен`);
+    }
+
+    function copySummaryToClipboard() {
+      const mainRep = state.mainReport || state.remediationReport;
+      if (!mainRep) return;
+
+      const weakBlocks = mainRep.blockStats
+        .filter(b => b.correct < b.total)
+        .map(b => `${b.blockTitle} (${b.correct}/${b.total})`);
+
+      let summaryText =
+        `ОТЧЕТ: Тренажер СОР (6 класс, Действия над рациональными числами)\n` +
+        `Ученик: ${mainRep.studentName}\n` +
+        `Дата: ${mainRep.dateStr} | Время: ${mainRep.durationStr}\n` +
+        `Результат: ${mainRep.score}/${mainRep.total} (${mainRep.percent}%)\n` +
+        `Код проверки: ${mainRep.verificationCode}\n` +
+        `Западающие темы: ${weakBlocks.length > 0 ? weakBlocks.join(', ') : 'нет'}`;
+
+      if (state.remediationReport) {
+        summaryText += `\nРабота над ошибками: ${state.remediationReport.score}/${state.remediationReport.total} (${state.remediationReport.percent}%) за ${state.remediationReport.durationStr} [Код: ${state.remediationReport.verificationCode}]`;
+      }
+
+      const tempTextarea = document.createElement('textarea');
+      tempTextarea.value = summaryText;
+      document.body.appendChild(tempTextarea);
+      tempTextarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Сводка скопирована в буфер обмена');
+      } catch (err) {
+        showToast('Не удалось скопировать текст');
+      }
+      document.body.removeChild(tempTextarea);
+    }
+
+    // =========================================================================
+    // ИНИЦИАЛИЗАЦИЯ СОБЫТИЙ
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMath(document.body);
+
+      const startBtn = document.getElementById('startBtn');
+      const nameInput = document.getElementById('studentNameInput');
+      const nameError = document.getElementById('nameErrorMsg');
+
+      startBtn.addEventListener('click', () => {
+        const val = nameInput.value.trim();
+        if (val.length < 2) {
+          nameError.classList.remove('hidden');
+          nameInput.focus();
+          return;
+        }
+        nameError.classList.add('hidden');
+        state.studentName = val;
+        startSession('main');
+      });
+
+      nameInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') startBtn.click();
+      });
+
+      document.getElementById('finishBtn').addEventListener('click', handleFinishClick);
+      document.getElementById('cancelFinishBtn').addEventListener('click', () => {
+        document.getElementById('confirmModal').classList.add('hidden');
+      });
+      document.getElementById('confirmFinishBtn').addEventListener('click', finalizeTest);
+
+      document.getElementById('remediationBtn').addEventListener('click', () => {
+        const currentRep = state.mode === 'main' ? state.mainReport : state.remediationReport;
+        if (!currentRep || currentRep.wrongQuestions.length === 0) return;
+
+        const wrongSlotIds = currentRep.wrongQuestions.map(q => q.slotId);
+        const prevVariants = {};
+        currentRep.wrongQuestions.forEach(q => {
+          prevVariants[q.slotId] = q.variantIndex;
+        });
+
+        startSession('remediation', wrongSlotIds, prevVariants);
+        showToast('Сгенерированы новые варианты по вашим ошибкам');
+      });
+
+      document.getElementById('saveReportBtn').addEventListener('click', downloadTeacherReport);
+      document.getElementById('copySummaryBtn').addEventListener('click', copySummaryToClipboard);
+
+      const verifierModal = document.getElementById('verifierModal');
+      document.getElementById('openVerifierBtn').addEventListener('click', () => {
+        const activeRep = state.mainReport || state.remediationReport;
+        if (activeRep) {
+          document.getElementById('verNameInput').value = activeRep.studentName;
+          document.getElementById('verScoreInput').value = activeRep.score;
+          document.getElementById('verTotalInput').value = activeRep.total;
+          document.getElementById('verDurationInput').value = activeRep.durationStr;
+          document.getElementById('verDateInput').value = activeRep.dateStr;
+          document.getElementById('verCodeInput').value = activeRep.verificationCode;
+        }
+        document.getElementById('verResultBox').classList.add('hidden');
+        verifierModal.classList.remove('hidden');
+      });
+
+      document.getElementById('closeVerifierBtn').addEventListener('click', () => {
+        verifierModal.classList.add('hidden');
+      });
+
+      document.getElementById('runVerifyBtn').addEventListener('click', () => {
+        const name = document.getElementById('verNameInput').value.trim();
+        const score = document.getElementById('verScoreInput').value.trim();
+        const total = document.getElementById('verTotalInput').value.trim();
+        const duration = document.getElementById('verDurationInput').value.trim();
+        const dateStr = document.getElementById('verDateInput').value.trim();
+        const inputCode = document.getElementById('verCodeInput').value.trim().toUpperCase();
+        const resBox = document.getElementById('verResultBox');
+
+        if (!name || score === '' || !total || !duration || !dateStr || !inputCode) {
+          resBox.className = 'p-3.5 rounded-xl text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-900';
+          resBox.textContent = 'Заполните все поля из отчета ученика для проверки подлинности.';
+          resBox.classList.remove('hidden');
+          return;
+        }
+
+        const expectedCode = computeVerificationCode({
+          studentName: name,
+          score: Number(score),
+          total: Number(total),
+          durationStr: duration,
+          dateStr: dateStr
+        });
+
+        resBox.classList.remove('hidden');
+        if (expectedCode === inputCode) {
+          resBox.className = 'p-3.5 rounded-xl text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-900';
+          resBox.textContent = `✓ ПОДЛИННОСТЬ ПОДТВЕРЖДЕНА! Данные не изменялись (код ${expectedCode} валиден).`;
+        } else {
+          resBox.className = 'p-3.5 rounded-xl text-xs font-semibold bg-red-50 border border-red-200 text-red-900';
+          resBox.textContent = '✕ ОШИБКА ПРОВЕРКИ: Контрольный код не совпадает! Вероятно, баллы, ФИО или время были изменены вручную.';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
